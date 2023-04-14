@@ -120,7 +120,7 @@ MP_SIZE=1
 ## Currently we don't support PP for MoE. To disable PP, set PP_SIZE
 ## to 1 and use the "--no-pipeline-parallel" arg.
 PP_SIZE=1
-NUM_GPUS=64
+NUM_GPUS=2
 ###############################################################################
 ### MoE configs
 ## Number of experts. EP_SIZE 1 means dense model without MoE
@@ -135,7 +135,7 @@ fi
 
 ## Original GPT-3 model always set min LR at 10% of max LR. For MoE model, we
 ## found that lower LR and min LR (than the base dense model) helps.
-## For 1.3B MoE-128 model we used LR=1.2e-4 and MIN_LR=1.0e-6.
+## For 1.3B MoE-128 model we used LR=1.2/home2/lizhicheng/Megatron-DeepSpeed/examples/MoE/output/log/gpt-0.125B-lr-4.5e-4-minlr-4.5e-06-bs-256-gpus-2-mp-2-pp-1-ep-64-mlc-0.01-cap-1.0-drop-true_ACT42_2023.04.11-08.46.28.loge-4 and MIN_LR=1.0e-6.
 ## For 350M MoE-128 model we used LR=2.0e-4 and MIN_LR=2.0e-6, but they are not
 ## heavily tuned.
 LR=2.0e-4
@@ -240,10 +240,11 @@ if [ "${USE_INTERNAL_DATA}" = "true" ]; then
     0.00208 ${NIH} 0.13017 ${CC2020} 0.09446 ${PCC} 0.15652 ${CC2021} \
     0.01359 ${ARX} 0.01588 ${GIT}"
 else
-    VOCAB_PATH=/data/the_pile_public_merged_nopreprocessing/gpt2-vocab.json
-    MERGE_PATH=/data/the_pile_public_merged_nopreprocessing/gpt2-merges.txt
+    VOCAB_PATH=/home2/lizhicheng/megatron_data/gpt2-vocab.json
+    MERGE_PATH=/home2/lizhicheng/megatron_data/gpt2-merges.txt
     # Public the Pile dataset, can be downloaded at https://mystic.the-eye.eu/public/AI/pile_neox/
-    DATA_BLEND=/data/the_pile_public_merged_nopreprocessing/pile_text_document
+    # For cluster Azure-EastUS-V100-32GB-4, Lab-RR1-V100
+    DATA_PATH=/home2/moe/moe/pile_text_document
 fi
 ###############################################################################
 data_options=" \
@@ -312,7 +313,7 @@ megatron_options="${megatron_options} \
         --disable-moe-token-dropping"
 fi
 
-template_json="ds_config_gpt_TEMPLATE.json"
+template_json="ds_config_gpt_Zero2_TEMPLATE.json"
 config_json="ds_config_gpt_${NAME}.json"
 sed "s/CONFIG_BATCH_SIZE/${GLOBAL_BATCH_SIZE}/" ${template_json} \
     | sed "s/CONFIG_MBSIZE/${BATCH_SIZE}/" \

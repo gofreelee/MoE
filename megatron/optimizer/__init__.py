@@ -59,7 +59,9 @@ def get_megatron_optimizer(model):
     if args.create_moe_param_group:
         from deepspeed.moe.utils import is_moe_param, split_params_into_different_moe_groups_for_optimizer
         param_groups = split_params_into_different_moe_groups_for_optimizer(param_groups)
-    
+    print("[debug]")    
+    print(args.cpu_optimizer)
+    args.cpu_optimizer = True
     if args.cpu_optimizer:
         assert args.optimizer == 'adam', 'CPU offloading is for Adam'
         if args.cpu_torch_adam:

@@ -120,7 +120,7 @@ MP_SIZE=1
 ## Currently we don't support PP for MoE. To disable PP, set PP_SIZE
 ## to 1 and use the "--no-pipeline-parallel" arg.
 PP_SIZE=1
-NUM_GPUS=64
+NUM_GPUS=2
 ###############################################################################
 ### MoE configs
 ## Number of experts. EP_SIZE 1 means dense model without MoE
@@ -240,10 +240,11 @@ if [ "${USE_INTERNAL_DATA}" = "true" ]; then
     0.00208 ${NIH} 0.13017 ${CC2020} 0.09446 ${PCC} 0.15652 ${CC2021} \
     0.01359 ${ARX} 0.01588 ${GIT}"
 else
-    VOCAB_PATH=/data/the_pile_public_merged_nopreprocessing/gpt2-vocab.json
-    MERGE_PATH=/data/the_pile_public_merged_nopreprocessing/gpt2-merges.txt
+    VOCAB_PATH=/home2/lizhicheng/megatron_data/gpt2-vocab.json
+    MERGE_PATH=/home2/lizhicheng/megatron_data/gpt2-merges.txt
     # Public the Pile dataset, can be downloaded at https://mystic.the-eye.eu/public/AI/pile_neox/
-    DATA_BLEND=/data/the_pile_public_merged_nopreprocessing/pile_text_document
+    # For cluster Azure-EastUS-V100-32GB-4, Lab-RR1-V100
+    DATA_PATH=/home2/moe/moe/pile_text_document
 fi
 ###############################################################################
 data_options=" \
@@ -312,7 +313,7 @@ megatron_options="${megatron_options} \
         --disable-moe-token-dropping"
 fi
 
-template_json="ds_config_gpt_TEMPLATE.json"
+template_json="ds_config_gpt_Zero2_TEMPLATE.json"
 config_json="ds_config_gpt_${NAME}.json"
 sed "s/CONFIG_BATCH_SIZE/${GLOBAL_BATCH_SIZE}/" ${template_json} \
     | sed "s/CONFIG_MBSIZE/${BATCH_SIZE}/" \

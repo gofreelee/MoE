@@ -110,24 +110,25 @@ LR_DECAY_TOKENS=300000000000
 ### Parallelism configs
 ## Micro batch size per GPU
 ## Make sure that BATCH_SIZE <= GLOBAL_BATCH_SIZE*PP_SIZE*MP_SIZE/NUM_GPUS
-BATCH_SIZE=4
+BATCH_SIZE=2
 
 ## Model parallelism, 1 is no MP
 ## Currently MoE models have divergence issue when MP > 1.
-MP_SIZE=1
+MP_SIZE=2
 
 ## Pipeline parallelism
 ## Currently we don't support PP for MoE. To disable PP, set PP_SIZE
 ## to 1 and use the "--no-pipeline-parallel" arg.
 PP_SIZE=1
-NUM_GPUS=$(($(ds_ssh nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)-2))
+NUM_GPUS=$(($(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)-1))
+#NUM_GPUS=$(($(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)-2))
 NUM_GPUS_PERNODE=$(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)
 NUM_NODE=$(( ${NUM_GPUS} / ${NUM_GPUS_PERNODE} ))
 ###############################################################################
 ### MoE configs
 ## Number of experts. EP_SIZE 1 means dense model without MoE
 # EP_SIZE=1
-EP_SIZE=64
+EP_SIZE=128
 
 if [[ $EP_SIZE -gt $NUM_GPUS ]]; then
     EP_PARALLEL_SIZE=$NUM_GPUS
@@ -214,7 +215,7 @@ if [ "${USE_INTERNAL_DATA}" = "true" ]; then
     # BASE_DATA_PATH=/vc_data/Megatron-LM/data
     # DATA_HOME="/vc_data/pile-cc1-cc2-shuf"
     ## For cluster Lab-RR1-V100
-    BASE_DATA_PATH=/data/Megatron-LM/data
+    BASE_DATA_PATH= /home2/lizhicheng/megatron_data/
     DATA_HOME="/turing-ssd/users/conglli/data/pile-cc1-cc2-shuf"
     ## For cluster Azure-CentralUS-A100
     # BASE_DATA_PATH=/data/Megatron-LM/data
@@ -242,11 +243,12 @@ if [ "${USE_INTERNAL_DATA}" = "true" ]; then
     0.00208 ${NIH} 0.13017 ${CC2020} 0.09446 ${PCC} 0.15652 ${CC2021} \
     0.01359 ${ARX} 0.01588 ${GIT}"
 else
-    VOCAB_PATH=/data/the_pile_public_merged_nopreprocessing/gpt2-vocab.json
-    MERGE_PATH=/data/the_pile_public_merged_nopreprocessing/gpt2-merges.txt
+    
+    VOCAB_PATH=/home2/lizhicheng/megatron_data/gpt2-vocab.json
+    MERGE_PATH=/home2/lizhicheng/megatron_data/gpt2-merges.txt
     # Public the Pile dataset, can be downloaded at https://mystic.the-eye.eu/public/AI/pile_neox/
     # For cluster Azure-EastUS-V100-32GB-4, Lab-RR1-V100
-    DATA_PATH=/vc_data_blob/users/conglli/the_pile_public_merged_nopreprocessing/pile_text_document
+    DATA_PATH=/home2/moe/moe/pile_text_document
     # For cluster Azure-WestUS3-A100
     # DATA_PATH=/blob/data/the_pile_public_merged_nopreprocessing/pile_text_document
 fi
@@ -317,7 +319,7 @@ megatron_options="${megatron_options} \
         --disable-moe-token-dropping"
 fi
 
-template_json="ds_config_gpt_TEMPLATE.json"
+template_json="ds_config_gpt_Zero2_TEMPLATE.json"
 config_json="ds_config_gpt_${NAME}.json"
 sed "s/CONFIG_BATCH_SIZE/${GLOBAL_BATCH_SIZE}/" ${template_json} \
     | sed "s/CONFIG_MBSIZE/${BATCH_SIZE}/" \
